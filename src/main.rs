@@ -26,7 +26,7 @@ async fn main() -> Result<(), std::io::Error> {
         // Configure CORS
         let cors = Cors::default()
             .allowed_origin("http://localhost:8000")  // Your server origin
-            .allowed_origin("http://localhost:3000")  // Common frontend dev server
+            .allowed_origin("http://localhost:8080")  // Common frontend dev server
             .allowed_origin_fn(|origin, _req_head| {
                 // Allow all localhost origins for development
                 origin.as_bytes().starts_with(b"http://localhost")
@@ -39,10 +39,22 @@ async fn main() -> Result<(), std::io::Error> {
             .allowed_header(actix_web::http::header::CONTENT_TYPE)
             .supports_credentials()
             .max_age(3600);
+        // let cors = Cors::default()
+        //     .allowed_origin("http://localhost:8000")
+        //     .allowed_origin("http://localhost:8080")
+        //     .allowed_origin_fn(|origin, _req_head| {
+        //         origin.as_bytes().starts_with(b"http://localhost")
+        //     })
+        //     .allowed_methods(vec!["GET", "POST", "PUT", "DELETE", "OPTIONS"])
+        //     .allow_any_header()
+        //     .supports_credentials()
+        //     .max_age(3600);
+
         
         App::new()
         .app_data(web::Data::new(pool.clone()))
         .wrap(Logger::default())
+        .wrap(cors) // ✅ ADD THIS LINE
         .route("/",web::get().to(api::routes::index_page))
         .service(SwaggerUi::new("/swagger-ui/{_:.*}").url("/api-docs/openapi.json", openapi.clone()))
         .service(api::routes::create_blogpost)
